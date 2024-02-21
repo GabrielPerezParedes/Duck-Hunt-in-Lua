@@ -36,7 +36,7 @@ function scene:create( event )
  
     local sceneGroup = self.view
     -- Code here runs when the scene is first created but has not yet appeared on screen
-    fondo = display.newImageRect(sceneGroup,  carpeta_recursos .. "8.jpg", CW, CH)
+    fondo = display.newImageRect(sceneGroup,  carpeta_recursos .. "fondoMenu.png", CW, CH)
     --fondo.x = CW/2; fondo.y= CH/2
     fondo.anchorX = 0; fondo.anchorY=0
 

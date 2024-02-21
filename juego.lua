@@ -18,29 +18,110 @@ local scene = composer.newScene()
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
  
+local contador = 0  -- Crea un contador global
+
 function destruir(self, event)
     if event.phase == "ended" then
         valor_puntaje = valor_puntaje + self.puntaje
         puntaje.text = "SCORE:" .. valor_puntaje
-            --sumar puntaje
-            --destruir 
-            self:removeSelf( )
+        --sumar puntaje
+        --destruir 
+        self:removeSelf( )
+        contador = contador + 1  -- Incrementa el contador
+        print("Contador: " .. contador)  -- Imprime el valor del contador
+        crearPato()  -- Crea un nuevo pato
     end
     return true
 end
 
-function crearFrutas()
-        print("CREANDO FRUTA")
-        local fruta = display.newImageRect(grupoPersonajes, carpeta_recursos.."f1.png", 30,30)
-        fruta.x = math.random(35, CW-35); fruta.y = math.random(35, CH-35)
-        fruta.puntaje = math.random(1,50)
-        transition.to(fruta, {x=math.random(0,CW), y=math.random(0,CH), time=2000})
-        fruta.touch = destruir
-        fruta:addEventListener( "touch", fruta )
-        return fruta
+local direcciones = {
+    {angulo = 150},  -- Arriba izquierda
+    {angulo = 90},  -- Arriba centro
+    {angulo = 30},  -- Arriba derecha
+    {angulo = 170},  -- Abajo izquierda
+    {angulo = 10}  -- Abajo derecha
+}
+
+-- Crea una línea invisible en el medio de la pantalla
+local lineaMedia = display.newLine(0, CH/2, CW, CH/2)
+lineaMedia.isVisible = false
+
+function crearPato()
+    print("CREANDO PATO")
+    local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 30,30)
+    pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
+    pato.puntaje = math.random(1,50)
+    
+    -- Usa el contador para determinar la dirección del pato
+    local direccion = direcciones[(contador % #direcciones) + 1]
+    
+    -- Calcula las coordenadas x e y basadas en el ángulo
+    local radianes = math.rad(direccion.angulo)
+    local distancia = math.max(CW, CH)  -- Asegura que los patos lleguen hasta el borde de la pantalla
+    local x = CW/2 + distancia * math.cos(radianes)
+    local y = CH/2 - distancia * math.sin(radianes)
+    
+    -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
+    x = math.max(0, math.min(CW, x))
+    y = math.max(0, math.min(CH, y))
+    
+    transition.to(pato, {x=x, y=y, time=2000, onComplete=function()
+        -- Calcula el ángulo de rebote
+        local anguloRebote = (direccion.angulo > 180) and (direccion.angulo - 180) or (direccion.angulo + 180)
+        local radianesRebote = math.rad(anguloRebote)
+        local xRebote = CW/2 + distancia * math.cos(radianesRebote)
+        local yRebote = CH/2 - distancia * math.sin(radianesRebote)
+        
+        -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
+        xRebote = math.max(0, math.min(CW, xRebote))
+        yRebote = math.max(0, math.min(CH, yRebote))
+        
+        transition.to(pato, {x=xRebote, y=yRebote, time=2000})
+    end})
+    pato.touch = destruir
+    pato:addEventListener( "touch", pato )
+    return pato
 end
 
+-- Mueve la definición de 'distancia' al ámbito global
+local distancia = math.max(CW, CH)  -- Asegura que los patos lleguen hasta el borde de la pantalla
 
+-- Agrega un listener para el evento "enterFrame" que verifica si un pato ha cruzado la línea media
+Runtime:addEventListener("enterFrame", function()
+    for i = grupoPersonajes.numChildren, 1, -1 do
+        local pato = grupoPersonajes[i]
+        if pato.y > lineaMedia.y then
+            -- El pato ha cruzado la línea media, así que cambia su dirección
+            local direccion = direcciones[(contador % #direcciones) + 1]
+            local radianes = math.rad(direccion.angulo)
+            local x = CW/2 + distancia * math.cos(radianes)
+            local y = CH/2 - distancia * math.sin(radianes)
+            
+            -- Calcula el ángulo de rebote
+            local anguloRebote = (direccion.angulo > 180) and (direccion.angulo - 180) or (direccion.angulo + 180)
+            local radianesRebote = math.rad(anguloRebote)
+            local xRebote = CW/2 + distancia * math.cos(radianesRebote)
+            local yRebote = CH/2 - distancia * math.sin(radianesRebote)
+            
+            -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
+            xRebote = math.max(0, math.min(CW, xRebote))
+            yRebote = math.max(0, math.min(CH, yRebote))
+            
+            transition.to(pato, {x=xRebote, y=yRebote, time=2000})
+        end
+    end
+end)
+
+
+---------------------
+function scene:show( event )
+    local sceneGroup = self.view
+    local phase = event.phase
+
+    if ( phase == "did" ) then
+        timer.performWithDelay( 1000, crearPato, event.params.dificultad )
+    end
+end
 
 -- create()
 function scene:create( event )
@@ -53,7 +134,7 @@ function scene:create( event )
     grupoInterfaz = display.newGroup()
     sceneGroup:insert( grupoInterfaz)
     -- Code here runs when the scene is first created but has not yet appeared on screen
-    fondo = display.newImageRect(grupoFondo,  carpeta_recursos .. "5.jpg", CW, CH)
+    fondo = display.newImageRect(grupoFondo,  carpeta_recursos .. "fondoJuego.png", CW, CH)
     fondo.x = CW/2; fondo.y= CH/2
 
     for i=1,vidas,1 do
@@ -84,7 +165,7 @@ function scene:show( event )
         -- local f1 = crearFrutas()
         -- sceneGroup:insert(f1)
         --for i=1, dificultad,1 do
-        timer.performWithDelay( 1000, crearFrutas, event.params.dificultad )
+        timer.performWithDelay( 1000, crearPato, 1 )
          
         --end
     end
