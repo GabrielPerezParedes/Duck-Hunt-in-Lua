@@ -17,19 +17,10 @@ local scene = composer.newScene()
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
 
-local duck_sheet_left={
-    width=122,
-    height=131,
-    numFrames=3,
-    sheetContentWidth=366,
-    sheetContentHeight=131
- }
-
- local duck = graphics.newImageSheet( carpeta_recursos.."leftt.png", duck_sheet_left )
-
- local sequenceData = {name = "normalRun", start=1,count=3,time=300}
-
 local contador = 0  -- Crea un contador global
+local contadorImagenes = 0 -- Contador de imágenes mostradas
+local espacioEntreImagenes = 120 -- Espacio entre cada imagen, ajusta según el tamaño de tus imágenes
+
 
 function destruir(self, event)
     if event.phase == "ended" then
@@ -47,7 +38,6 @@ end
 
 local direcciones = {
     {angulo = 150},  -- Arriba izquierda
-    {angulo = 90},  -- Arriba centro
     {angulo = 30},  -- Arriba derecha
     {angulo = 170},  -- Abajo izquierda
     {angulo = 10}  -- Abajo derecha
@@ -57,17 +47,149 @@ local direcciones = {
 local lineaMedia = display.newLine(0, CH/2, CW, CH/2)
 lineaMedia.isVisible = false
 
-function crearPato()
-    print("CREANDO PATO")
-    local pato = display.newSprite( grupoPersonajes, duck, sequenceData )
+local find = display.newImage(carpeta_recursos.."find.png")
+find.isVisible = false -- Oculta la imagen hasta que sea necesario mostrarla
 
-    pato:play()
-    --local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 100,100)
-    pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
-    pato.puntaje = math.random(1,50)
-    
+------SHEETS------
+-----dogSniff
+local dog_sniff={
+    width=125,
+    height=130,
+    numFrames=5,
+    sheetContentWidth=625,
+    sheetContentHeight=130
+ }
+
+ local sniff = graphics.newImageSheet( carpeta_recursos.."dog_sheet_sniff.png", dog_sniff)
+
+ local sequenceData = {name = "normalRun", start=1,count=5,time=500}
+
+ -----dogjump
+local dog_jump={
+    width=125,
+    height=130,
+    numFrames=2,
+    sheetContentWidth=250,
+    sheetContentHeight=130
+ }
+
+ local jump = graphics.newImageSheet( carpeta_recursos.."dog-sheet-jump.png", dog_jump)
+
+ local sequenceData = {name = "normalRun", start=1,count=2,time=200}
+
+-----izquierda
+local duck_sheet_left={
+    width=127,
+    height=131,
+    numFrames=3,
+    sheetContentWidth=382,
+    sheetContentHeight=131
+ }
+
+ local duck_left = graphics.newImageSheet( carpeta_recursos.."left.png", duck_sheet_left )
+
+ local sequenceData = {name = "normalRun", start=1,count=3,time=300}
+-----derecha
+ local duck_sheet_right={
+    width=127,
+    height=131,
+    numFrames=3,
+    sheetContentWidth=382,
+    sheetContentHeight=131
+ }
+
+ local duck_right = graphics.newImageSheet( carpeta_recursos.."right.png", duck_sheet_right )
+
+ local sequenceData = {name = "normalRun", start=1,count=3,time=300}
+
+ -----derechaArriba
+
+ local duck_sheet_top_right={
+    width=127,
+    height=131,
+    numFrames=3,
+    sheetContentWidth=382,
+    sheetContentHeight=131
+ }
+
+ local duck_top_right = graphics.newImageSheet( carpeta_recursos.."top-right.png", duck_sheet_top_right )
+
+ local sequenceData = {name = "normalRun", start=1,count=3,time=300}
+
+  -----izquierdaArriba
+
+  local duck_sheet_top_left={
+    width=127,
+    height=131,
+    numFrames=3,
+    sheetContentWidth=382,
+    sheetContentHeight=131
+ }
+
+ local duck_top_left = graphics.newImageSheet( carpeta_recursos.."top-left.png", duck_sheet_top_left )
+
+ local sequenceData = {name = "normalRun", start=1,count=3,time=300}
+
+ -----------------------------------------------------------------------------------
+-- Aumenta el tiempo de la animación "sniff" a 1000 (antes era 500)
+local sequences = {
+    { name="sniff", sheet=sniff, start=1, count=5, time=1000 },
+    { name="jump", sheet=jump, start=1, count=2, time=400 } -- Aumenta el tiempo de la animación "jump" a 400 (antes era 200)
+}
+
+local dog = display.newSprite(sniff, sequences)
+dog.x = 0
+dog.y = display.contentCenterY
+
+local function startJump()
+    dog:setSequence("jump")
+    dog:play()
+end
+
+local function showFind()
+    find.isVisible = true
+    timer.performWithDelay(1000, startJump) -- Aumenta el retraso a 1000 (antes era 500)
+end
+
+dog:setSequence("sniff")
+dog:play()
+timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 500)
+
+ -----CREAR LOS PATOS
+ function crearPato()
+    print("CREANDO PATO")
+
     -- Usa el contador para determinar la dirección del pato
     local direccion = direcciones[(contador % #direcciones) + 1]
+
+    -- Selecciona la hoja de sprites dependiendo del ángulo de la dirección
+    local duck_sheet
+    if direccion.angulo == 150 then
+        duck_sheet = duck_top_left
+    elseif direccion.angulo == 30 then
+        duck_sheet = duck_top_right
+    elseif direccion.angulo == 170 then
+        duck_sheet = duck_left
+    else
+        duck_sheet = duck_right
+    end
+
+    local pato = display.newSprite( grupoPersonajes, duck_sheet, sequenceData )
+
+    pato:play()
+    pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
+    pato.puntaje = math.random(1,50)
+
+            -- Agrega una propiedad para rastrear la dirección del pato
+    if direccion.angulo == 150 then
+        pato.direccion = "top_left"
+    elseif direccion.angulo == 30 then
+        pato.direccion = "top_right"
+    elseif direccion.angulo == 170 then
+        pato.direccion = "left"
+    else
+        pato.direccion = "right"
+    end
     
     -- Calcula las coordenadas x e y basadas en el ángulo
     local radianes = math.rad(direccion.angulo)
@@ -112,7 +234,12 @@ Runtime:addEventListener("enterFrame", function()
             local y = CH/2 - distancia * math.sin(radianes)
             
             -- Calcula el ángulo de rebote
-            local anguloRebote = (direccion.angulo > 180) and (direccion.angulo - 180) or (direccion.angulo + 180)
+            local anguloRebote
+            if pato.direccion == "top_left" or pato.direccion == "top_right" then
+                anguloRebote = (direccion.angulo > 90) and (direccion.angulo - 90) or (direccion.angulo + 90)
+            else
+                anguloRebote = (direccion.angulo > 180) and (direccion.angulo - 180) or (direccion.angulo + 180)
+            end
             local radianesRebote = math.rad(anguloRebote)
             local xRebote = CW/2 + distancia * math.cos(radianesRebote)
             local yRebote = CH/2 - distancia * math.sin(radianesRebote)
@@ -121,6 +248,22 @@ Runtime:addEventListener("enterFrame", function()
             xRebote = math.max(0, math.min(CW, xRebote))
             yRebote = math.max(0, math.min(CH, yRebote))
             
+            -- Cambia la hoja de sprites del pato a su opuesto
+            if pato.direccion == "left" then
+                pato:setSequence("right")
+                pato.direccion = "right"
+            elseif pato.direccion == "right" then
+                pato:setSequence("left")
+                pato.direccion = "left"
+            elseif pato.direccion == "top_left" then
+                pato:setSequence("top_right")
+                pato.direccion = "top_right"
+            elseif pato.direccion == "top_right" then
+                pato:setSequence("top_left")
+                pato.direccion = "top_left"
+            end
+            pato:play()
+
             transition.to(pato, {x=xRebote, y=yRebote, time=2000})
         end
     end
