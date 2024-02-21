@@ -18,7 +18,7 @@ local function onFirstView( event )
 end
 
 local function onSecondView( event )
-    composer.gotoScene( "view2" )
+    composer.gotoScene( "menu" )
 end
 
 

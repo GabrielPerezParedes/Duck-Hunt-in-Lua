@@ -7,7 +7,6 @@ local scene = composer.newScene()
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
  
- 
  local fondo
  local puntaje
  local vidas = 5
@@ -17,7 +16,19 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
- 
+
+local duck_sheet_left={
+    width=122,
+    height=131,
+    numFrames=3,
+    sheetContentWidth=366,
+    sheetContentHeight=131
+ }
+
+ local duck = graphics.newImageSheet( carpeta_recursos.."leftt.png", duck_sheet_left )
+
+ local sequenceData = {name = "normalRun", start=1,count=3,time=300}
+
 local contador = 0  -- Crea un contador global
 
 function destruir(self, event)
@@ -48,7 +59,10 @@ lineaMedia.isVisible = false
 
 function crearPato()
     print("CREANDO PATO")
-    local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 100,100)
+    local pato = display.newSprite( grupoPersonajes, duck, sequenceData )
+
+    pato:play()
+    --local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 100,100)
     pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
     pato.puntaje = math.random(1,50)
     
@@ -112,17 +126,6 @@ Runtime:addEventListener("enterFrame", function()
     end
 end)
 
-
----------objeto ensquina superior derecha
-function scene:show( event )
-    local sceneGroup = self.view
-    local phase = event.phase
-
-    if ( phase == "did" ) then
-        timer.performWithDelay( 1000, crearPato, event.params.dificultad )
-    end
-end
-
 -- create()
 function scene:create( event )
  
@@ -137,10 +140,10 @@ function scene:create( event )
     fondo = display.newImageRect(grupoFondo,  carpeta_recursos .. "fondoJuego.png", CW, CH)
     fondo.x = CW/2; fondo.y= CH/2
 
-    for i=1,vidas,1 do
-        local imagen_vida = display.newImageRect(grupoInterfaz,  carpeta_recursos.. "win.png", 15, 21)
-        imagen_vida.y = CH/20; imagen_vida.x = CW  -(20 * i)
-    end
+    --for i=1,vidas,1 do
+        --local imagen_vida = display.newImageRect(grupoInterfaz,  carpeta_recursos.. "win.png", 15, 21)
+        --imagen_vida.y = CH/20; imagen_vida.x = CW  -(20 * i)
+    --end
 
     puntaje = display.newText(grupoInterfaz,"SCORE: "  .. valor_puntaje, 0, CH/20, "arial bold", 20 )
     puntaje.anchorX = 0

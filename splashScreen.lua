@@ -37,7 +37,7 @@ function scene:create( event )
     fondo.anchorX = 0; fondo.anchorY = 0
     fondo:setFillColor( 0.44 )
 
-    icono = display.newImageRect(carpeta_recursos.. "LogoNintendo.jpg", 1100, 800)
+    icono = display.newImageRect(carpeta_recursos.. "LogoNintendo.jpg", 1050, 900)
     icono.x = CW/2; icono.y = CH/2
 
   --  fondo:addEventListener( "touch", ir_menu )
@@ -59,7 +59,7 @@ function scene:show( event )
  
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
-        transition.to(icono, {time=2000, onComplete=ir_menu})
+        transition.to(icono, {time=1100, onComplete=ir_menu})
     end
 end
  
