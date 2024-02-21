@@ -35,7 +35,7 @@ function crearFrutas()
         fruta.x = math.random(35, CW-35); fruta.y = math.random(35, CH-35)
         fruta.puntaje = math.random(1,50)
         transition.to(fruta, {x=math.random(0,CW), y=math.random(0,CH), time=2000})
-=        fruta.touch = destruir
+        fruta.touch = destruir
         fruta:addEventListener( "touch", fruta )
         return fruta
 end
