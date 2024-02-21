@@ -16,11 +16,9 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
-
 local contador = 0  -- Crea un contador global
 local contadorImagenes = 0 -- Contador de imágenes mostradas
-local espacioEntreImagenes = 120 -- Espacio entre cada imagen, ajusta según el tamaño de tus imágenes
-
+local espacioEntreImagenes = 29.99 -- Espacio entre cada imagen, ajusta según el tamaño de tus imágenes
 
 function destruir(self, event)
     if event.phase == "ended" then
@@ -30,6 +28,23 @@ function destruir(self, event)
         --destruir 
         self:removeSelf( )
         contador = contador + 1  -- Incrementa el contador
+
+        -- Verificar si el contador de imágenes ha alcanzado el límite de 10
+        if contadorImagenes < 10 then
+            contadorImagenes = contadorImagenes + 1
+
+            local tamanoImagen = 38
+            local posicionYImagenes = display.contentHeight * 0.828
+            local desplazamientoInicial = -display.contentWidth * 0.04111
+
+            local nuevaImagen = display.newImageRect(grupoInterfaz, carpeta_recursos.."red.png", tamanoImagen, tamanoImagen)
+            nuevaImagen.x = display.contentCenterX + (contadorImagenes - 1) * espacioEntreImagenes + desplazamientoInicial - (5 * espacioEntreImagenes / 2)
+            nuevaImagen.y = posicionYImagenes
+
+            -- Aumentar el espacio entre imágenes después de añadir una nueva
+            espacioEntreImagenes = espacioEntreImagenes + 0.4
+        end
+
         print("Contador: " .. contador)  -- Imprime el valor del contador
         crearPato()  -- Crea un nuevo pato
     end
@@ -140,6 +155,35 @@ local sequences = {
 local dog = display.newSprite(sniff, sequences)
 dog.x = 0
 dog.y = display.contentCenterY
+dog.xScale = 2 -- Duplica el tamaño en la dirección X
+dog.yScale = 2 -- Duplica el tamaño en la dirección Y
+
+local function jumpAndDisappear()
+    dog:setSequence("jump") -- Cambia a la animación de salto
+    dog:play()
+
+    -- Espera a que la animación de salto se complete antes de hacer desaparecer al perro
+    timer.performWithDelay(400, function() 
+        dog.isVisible = false
+        -- Ahora que el perro ha desaparecido, podemos comenzar a crear patos
+        crearPatos() -- Asegúrate de que esta función maneje la creación y aparición de patos de forma adecuada
+    end)
+end
+
+local function continueSniffing()
+    if dog.x < display.contentCenterX then
+        dog.x = dog.x + 10 -- Mueve el perro hacia el centro
+        timer.performWithDelay(100, continueSniffing) -- Repite la función después de un breve retraso
+    else
+        jumpAndDisappear() -- El perro llega al centro y ejecuta la animación de salto
+    end
+end
+
+
+
+dog:setSequence("sniff")
+dog:play()
+continueSniffing()
 
 local function startJump()
     dog:setSequence("jump")
@@ -148,21 +192,19 @@ end
 
 local function showFind()
     find.isVisible = true
-    timer.performWithDelay(1000, startJump) -- Aumenta el retraso a 1000 (antes era 500)
+    timer.performWithDelay(1000, startJump) 
 end
 
 dog:setSequence("sniff")
 dog:play()
-timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 500)
+timer.performWithDelay(1000, showFind) 
 
  -----CREAR LOS PATOS
  function crearPato()
     print("CREANDO PATO")
 
-    -- Usa el contador para determinar la dirección del pato
     local direccion = direcciones[(contador % #direcciones) + 1]
 
-    -- Selecciona la hoja de sprites dependiendo del ángulo de la dirección
     local duck_sheet
     if direccion.angulo == 150 then
         duck_sheet = duck_top_left
@@ -177,10 +219,10 @@ timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 5
     local pato = display.newSprite( grupoPersonajes, duck_sheet, sequenceData )
 
     pato:play()
-    pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
+    pato.x = CW/2; pato.y = CH/2 
     pato.puntaje = math.random(1,50)
 
-            -- Agrega una propiedad para rastrear la dirección del pato
+
     if direccion.angulo == 150 then
         pato.direccion = "top_left"
     elseif direccion.angulo == 30 then
@@ -193,11 +235,10 @@ timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 5
     
     -- Calcula las coordenadas x e y basadas en el ángulo
     local radianes = math.rad(direccion.angulo)
-    local distancia = math.max(CW, CH)  -- Asegura que los patos lleguen hasta el borde de la pantalla
+    local distancia = math.max(CW, CH)  
     local x = CW/2 + distancia * math.cos(radianes)
     local y = CH/2 - distancia * math.sin(radianes)
     
-    -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
     x = math.max(0, math.min(CW, x))
     y = math.max(0, math.min(CH, y))
     
@@ -208,7 +249,6 @@ timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 5
         local xRebote = CW/2 + distancia * math.cos(radianesRebote)
         local yRebote = CH/2 - distancia * math.sin(radianesRebote)
         
-        -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
         xRebote = math.max(0, math.min(CW, xRebote))
         yRebote = math.max(0, math.min(CH, yRebote))
         
@@ -219,21 +259,17 @@ timer.performWithDelay(1000, showFind) -- Aumenta el retraso a 1000 (antes era 5
     return pato
 end
 
--- Mueve la definición de 'distancia' al ámbito global
-local distancia = math.max(CW, CH)  -- Asegura que los patos lleguen hasta el borde de la pantalla
+local distancia = math.max(CW, CH) 
 
--- Agrega un listener para el evento "enterFrame" que verifica si un pato ha cruzado la línea media
 Runtime:addEventListener("enterFrame", function()
     for i = grupoPersonajes.numChildren, 1, -1 do
         local pato = grupoPersonajes[i]
         if pato.y > lineaMedia.y then
-            -- El pato ha cruzado la línea media, así que cambia su dirección
             local direccion = direcciones[(contador % #direcciones) + 1]
             local radianes = math.rad(direccion.angulo)
             local x = CW/2 + distancia * math.cos(radianes)
             local y = CH/2 - distancia * math.sin(radianes)
             
-            -- Calcula el ángulo de rebote
             local anguloRebote
             if pato.direccion == "top_left" or pato.direccion == "top_right" then
                 anguloRebote = (direccion.angulo > 90) and (direccion.angulo - 90) or (direccion.angulo + 90)
@@ -244,7 +280,6 @@ Runtime:addEventListener("enterFrame", function()
             local xRebote = CW/2 + distancia * math.cos(radianesRebote)
             local yRebote = CH/2 - distancia * math.sin(radianesRebote)
             
-            -- Ajusta las coordenadas x e y para que no se pasen del borde de la pantalla
             xRebote = math.max(0, math.min(CW, xRebote))
             yRebote = math.max(0, math.min(CH, yRebote))
             
@@ -279,7 +314,6 @@ function scene:create( event )
     sceneGroup:insert(grupoPersonajes)
     grupoInterfaz = display.newGroup()
     sceneGroup:insert( grupoInterfaz)
-    -- Code here runs when the scene is first created but has not yet appeared on screen
     fondo = display.newImageRect(grupoFondo,  carpeta_recursos .. "fondoJuego.png", CW, CH)
     fondo.x = CW/2; fondo.y= CH/2
 
