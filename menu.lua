@@ -40,8 +40,8 @@ function scene:create( event )
     --fondo.x = CW/2; fondo.y= CH/2
     fondo.anchorX = 0; fondo.anchorY=0
 
-    boton_play = display.newImageRect(sceneGroup, carpeta_recursos.."play.png", 100, 100)
-    boton_play.x = CW/2; boton_play.y = CH/2
+    boton_play = display.newImageRect(sceneGroup, carpeta_recursos.."bu.png", 50, 70)
+    boton_play.x = CW/2.05; boton_play.y = CH/1.7
 
  
 end

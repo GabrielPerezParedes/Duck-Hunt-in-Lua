@@ -48,7 +48,7 @@ lineaMedia.isVisible = false
 
 function crearPato()
     print("CREANDO PATO")
-    local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 30,30)
+    local pato = display.newImageRect(grupoPersonajes, carpeta_recursos.."0.png", 100,100)
     pato.x = CW/2; pato.y = CH/2  -- Cambia las coordenadas iniciales a las del centro de la pantalla
     pato.puntaje = math.random(1,50)
     
@@ -113,7 +113,7 @@ Runtime:addEventListener("enterFrame", function()
 end)
 
 
----------------------
+---------objeto ensquina superior derecha
 function scene:show( event )
     local sceneGroup = self.view
     local phase = event.phase
