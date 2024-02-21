@@ -59,7 +59,7 @@ function scene:show( event )
  
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
-        transition.to(icono, {rotation=360, time=200, onComplete=ir_menu})
+        transition.to(icono, {rotation=360, time=2000, onComplete=ir_menu})
     end
 end
  
